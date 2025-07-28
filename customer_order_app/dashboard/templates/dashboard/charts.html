@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Charts & Analytics{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate__animated animate__fadeIn">
+  <div class="card shadow-lg border-0 rounded-4">
+    <div class="card-header bg-dark text-white rounded-top-4">
+      <h4 class="mb-0">Sales Analytics</h4>
+    </div>
+    <div class="card-body">
+      <canvas id="salesChart" height="120"></canvas>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const ctx = document.getElementById('salesChart').getContext('2d');
+
+  const salesChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: {{ labels|safe }},
+      datasets: [{
+        label: 'Sales',
+        data: {{ values|safe }},
+        backgroundColor: 'rgba(255, 215, 0, 0.2)',
+        borderColor: 'rgba(255, 215, 0, 1)',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true,
+        pointRadius: 5,
+        pointHoverRadius: 8,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return 'Rs ' + value;
+            }
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: 'black'
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return 'Rs ' + context.parsed.y;
+            }
+          }
+        }
+      }
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard Overview{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">Dashboard Overview</h2>
+  <div class="row">
+    {% for card in cards %}
+    <div class="col-md-3">
+      <div class="card text-white bg-dark mb-3 shadow">
+        <div class="card-body">
+          <h5 class="card-title">{{ card.title }}</h5>
+          <p class="card-text fs-4">{{ card.count }}</p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="card mt-4">
+    <div class="card-body">
+      <canvas id="salesChart" height="100"></canvas>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('salesChart').getContext('2d');
+const salesChart = new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: {{ chart_labels|safe }},
+    datasets: [{
+      label: 'Monthly Sales',
+      data: {{ chart_data|safe }},
+      backgroundColor: 'rgba(255, 215, 0, 0.8)',
+      borderColor: '#000',
+      borderWidth: 1
+    }]
+  },
+});
+</script>
+{% endblock %}

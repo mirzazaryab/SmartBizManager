@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Sales Report{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h2>Sales Report</h2>
+  <table class="table table-striped">
+    <thead class="table-dark">
+      <tr>
+        <th>Invoice No</th>
+        <th>Customer</th>
+        <th>Total</th>
+        <th>Status</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sale in sales %}
+      <tr>
+        <td>{{ sale.invoice_no }}</td>
+        <td>{{ sale.customer }}</td>
+        <td>Rs. {{ sale.total }}</td>
+        <td>{{ sale.status }}</td>
+        <td>{{ sale.date|date:"d M Y" }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" class="text-center">No data available</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .invoice-box { max-width: 800px; margin: auto; border: 1px solid #eee; padding: 20px; }
+        .logo { text-align: center; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="invoice-box">
+        <div class="logo">
+            <h2>Your Company Name</h2>
+            <p>Address | Phone | Email</p>
+        </div>
+
+        <h4>Invoice #{{ invoice.id }}</h4>
+        <p><strong>Customer:</strong> {{ invoice.customer.name }}</p>
+        <p><strong>Date:</strong> {{ invoice.date }}</p>
+
+        <table width="100%" border="1" cellpadding="10">
+            <thead>
+                <tr><th>Product</th><th>Quantity</th><th>Unit Price</th><th>Total</th></tr>
+            </thead>
+            <tbody>
+            {% for item in invoice.items.all %}
+                <tr>
+                    <td>{{ item.product_name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.unit_price }}</td>
+                    <td>{{ item.total_price }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <p><strong>Total Amount:</strong> {{ invoice.total }}</p>
+        <p><strong>Payment Method:</strong> {{ invoice.payment_method }}</p>
+        {% if invoice.tid %}<p><strong>TID:</strong> {{ invoice.tid }}</p>{% endif %}
+        <p><strong>Status:</strong> {{ invoice.status }}</p>
+        <br>
+        <p><em>Terms & Conditions apply.</em></p>
+    </div>
+</body>
+</html>

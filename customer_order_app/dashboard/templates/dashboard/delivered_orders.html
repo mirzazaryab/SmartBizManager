@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Delivered Orders{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h2>Delivered Orders</h2>
+  <ul class="list-group">
+    {% for order in delivered_orders %}
+    <li class="list-group-item d-flex justify-content-between">
+      <span>#{{ order.id }} - {{ order.customer_name }}</span>
+      <span class="badge bg-success">{{ order.status }}</span>
+    </li>
+    {% empty %}
+    <li class="list-group-item text-center">No delivered orders</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

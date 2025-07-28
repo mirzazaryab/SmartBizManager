@@ -1,0 +1,27 @@
+# Core framework
+Django>=4.2
+
+# Form rendering
+django-crispy-forms>=2.0
+
+# Background tasks (automation)
+celery>=5.3
+django-celery-beat>=2.5
+
+# PDF generation
+weasyprint>=60.1
+reportlab>=4.0
+
+# Data handling / export
+pandas>=2.2.2
+openpyxl>=3.1.2  # for Excel export support if needed
+
+# Visualization (dashboard charts)
+plotly>=5.21.0
+# OR use chart.js via CDN in your HTML, so not needed here
+
+# Environment management (optional)
+python-decouple>=3.8
+
+# For date/time handling (optional but handy)
+pytz
