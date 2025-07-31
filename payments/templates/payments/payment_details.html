@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% block title %}Payment #{{ payment.id }} Details{% endblock %}
+
+{% block content %}
+<!-- Google Fonts - Using 'Inter' for consistency -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Bootstrap Icons for UI elements -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+    /* ============================================================
+                CLASSIC UI STYLES FOR PAYMENT DETAIL
+    ============================================================ */
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f8f9fa; /* A very light grey background */
+    }
+
+    /* The main card container for the details */
+    .payment-detail-card {
+        background-color: #ffffff;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Card header styling */
+    .payment-detail-header {
+        padding: 1.5rem 2rem;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .payment-detail-header h2 {
+        font-weight: 600;
+        color: #212529;
+        margin: 0;
+    }
+
+    .payment-detail-header .payment-id {
+        font-weight: 500;
+        color: #6c757d;
+    }
+
+    /* Card body styling */
+    .payment-detail-body {
+        padding: 2rem;
+    }
+
+    .detail-section {
+        margin-bottom: 2rem;
+    }
+
+    .detail-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .detail-section h4 {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #343a40;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .detail-item {
+        display: flex;
+        margin-bottom: 0.75rem;
+    }
+
+    .detail-item strong {
+        color: #495057;
+        width: 140px; /* Slightly wider for payment terms */
+        flex-shrink: 0;
+    }
+
+    .detail-item span {
+        color: #212529;
+    }
+
+    /* Notes section styling */
+    .notes-content {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 6px;
+        color: #212529;
+        white-space: pre-wrap; /* Preserves line breaks */
+        min-height: 60px; /* Ensures visibility even if empty */
+    }
+
+    /* Status badge styles */
+    .status-badge {
+        padding: 0.3em 0.75em;
+        border-radius: 10rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #fff;
+    }
+    .status-pending { background-color: #f39c12; }
+    .status-completed { background-color: #2ecc71; }
+    .status-failed { background-color: #e74c3c; }
+
+    /* Card footer with actions */
+    .payment-detail-footer {
+        padding: 1.5rem 2rem;
+        background-color: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        border-radius: 0 0 8px 8px;
+        text-align: right;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="payment-detail-card">
+        <!-- Card Header -->
+        <div class="payment-detail-header">
+            <h2 class="mb-1">Payment Details</h2>
+            <p class="payment-id mb-0">Payment ID: <strong>#{{ payment.id }}</strong></p>
+        </div>
+
+        <!-- Card Body -->
+        <div class="payment-detail-body">
+            <div class="row">
+                <!-- Customer Information Section -->
+                <div class="col-md-6">
+                    <div class="detail-section">
+                        <h4><i class="bi bi-person-circle me-2"></i>Customer Information</h4>
+                        <div class="detail-item">
+                            <strong>Customer:</strong>
+                            <span>{{ payment.order.customer.name|default:"Unknown Customer" }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Order:</strong>
+                            <span>#{{ payment.order_id }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Details Section -->
+                <div class="col-md-6">
+                    <div class="detail-section">
+                        <h4><i class="bi bi-wallet2 me-2"></i>Payment Details</h4>
+                        <div class="detail-item">
+                            <strong>Total Amount:</strong>
+                            <span style="font-weight: 700; font-size: 1.1rem; color: #2c3e50;">Rs {{ payment.order.total_price|floatformat:2|default:"0.00" }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Paid Amount:</strong>
+                            <span>Rs {{ paid_amount|floatformat:2|default:"0.00" }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Remaining:</strong>
+                            <span>Rs {{ remaining_amount|floatformat:2|default:"0.00" }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Date:</strong>
+                            <span>{{ payment.created_at|date:"F d, Y, g:i a"|default:"N/A" }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Payment Method: </strong>
+                            <span>{{ payment.get_payment_method_display|default:"N/A" }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Status:</strong>
+                            <span>
+                                <span class="status-badge
+                                    {% if payment.status == 'completed' %}status-completed
+                                    {% elif payment.status == 'pending' %}status-pending
+                                    {% elif payment.status == 'failed' %}status-failed
+                                    {% else %}status-default{% endif %}">
+                                    {{ payment.get_status_display|default:"N/A" }}
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <h4><i class="bi bi-chat-left-text me-2"></i>Notes</h4>
+                        <div class="notes-content">{{ payment.notes|default:"No notes available" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Footer -->
+        <div class="payment-detail-footer">
+            <a href="{% url 'payments:payment_list' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to Payment List
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

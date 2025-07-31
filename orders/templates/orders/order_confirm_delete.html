@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete Order - SmartBizManager{% endblock %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+  <div class="card shadow-lg border-0 position-relative" style="max-width: 500px; width: 100%; border-radius: 20px; overflow: hidden; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px);">
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="d-none position-absolute w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(0, 0, 0, 0.5); z-index: 10;">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+    <div class="card-body p-5">
+      <div class="text-center mb-4">
+        <img src="{% static 'images/logo.png' %}" alt="SmartBizManager Logo" style="width: 60px; height: 60px; margin-bottom: 1rem; transition: transform 0.3s ease;" class="logo-animate">
+        <h2 class="fw-bold text-dark">Confirm Delete</h2>
+        <p class="text-muted">Are you sure you want to delete the order for <strong>{{ order.product_name }}</strong> (Customer: {{ order.customer.name }})?</p>
+      </div>
+      <form method="POST" action="{% url 'orders:order_delete' order.pk %}" id="deleteForm">
+        {% csrf_token %}
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-danger btn-lg flex-grow-1 position-relative overflow-hidden" style="transition: background-color 0.3s, transform 0.2s;" data-bs-toggle="tooltip" title="Permanently delete this order">
+            <span class="button-text"><i class="bi bi-trash me-2"></i>Yes, Delete</span>
+            <span class="ripple"></span>
+          </button>
+          <a href="{% url 'orders:order_list' %}" class="btn btn-secondary btn-lg flex-grow-1" style="transition: background-color 0.3s, transform 0.2s;" data-bs-toggle="tooltip" title="Cancel and return to order list">
+            <i class="bi bi-x-circle me-2"></i>Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+    <div class="card-footer text-center bg-dark text-white py-3">
+      <small>&copy; 2025 SmartBizManager. All rights reserved.</small>
+    </div>
+  </div>
+</div>
+
+<!-- Inline CSS for custom styling -->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: url('{% static "images/background.jpg" %}') no-repeat center center fixed;
+    background-size: cover;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(245, 247, 250, 0.85) 0%, rgba(195, 207, 226, 0.85) 100%);
+    z-index: -1;
+  }
+
+  .card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    animation: fadeIn 0.8s ease-in;
+  }
+
+  .card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+  }
+
+  .btn-danger {
+    background: linear-gradient(90deg, #dc3545, #b02a37);
+    border: none;
+    border-radius: 0.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-danger:hover {
+    background: linear-gradient(90deg, #c82333, #9c1c2a);
+    transform: scale(1.05);
+  }
+
+  .btn-secondary {
+    background: #6c757d;
+    border: none;
+    border-radius: 0.5rem;
+  }
+
+  .btn-secondary:hover {
+    background: #5c636a;
+    transform: scale(1.05);
+  }
+
+  .logo-animate:hover {
+    transform: rotate(360deg);
+  }
+
+  /* Ripple effect for button */
+  .btn-danger .ripple {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: scale(0);
+    pointer-events: none;
+  }
+
+  .btn-danger.clicked .ripple {
+    animation: ripple 0.6s ease-out;
+  }
+
+  @keyframes ripple {
+    to {
+      transform: scale(4);
+      opacity: 0;
+    }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 576px) {
+    .card {
+      margin: 1.5rem;
+    }
+    .btn-lg {
+      font-size: 0.9rem;
+    }
+  }
+</style>
+
+<!-- Inline JavaScript for tooltips, ripple effect, and loading spinner -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function(tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    const form = document.getElementById('deleteForm');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    // Show loading spinner on submit
+    form.addEventListener('submit', function() {
+      loadingOverlay.classList.remove('d-none');
+      submitBtn.disabled = true;
+    });
+
+    // Ripple effect on button click
+    submitBtn.addEventListener('click', function(e) {
+      const rect = this.getBoundingClientRect();
+      const ripple = this.querySelector('.ripple');
+      ripple.style.left = `${e.clientX - rect.left}px`;
+      ripple.style.top = `${e.clientY - rect.top}px`;
+      this.classList.add('clicked');
+      setTimeout(() => this.classList.remove('clicked'), 600);
+    });
+  });
+</script>
+{% endblock %}

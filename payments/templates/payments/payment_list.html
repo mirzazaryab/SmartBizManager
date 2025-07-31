@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}All Payments - SmartBizManager{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="card shadow-sm">
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+      <h4 class="mb-0">
+        <i class="bi bi-wallet-fill me-2"></i>Payment List
+      </h4>
+      <a href="{% url 'payments:payment_add' %}" class="btn btn-light">
+        <i class="bi bi-plus-circle-fill me-1"></i>Add New
+      </a>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive py-3">
+        <table class="table table-hover table-bordered align-middle">
+          <thead class="table-dark">
+            <tr>
+              <th scope="col" style="width: 5%;">#</th>
+              <th scope="col">Customer</th>
+              <th scope="col">Total Amount</th>
+              <th scope="col">Paid Amount</th>
+              <th scope="col">Remaining Amount</th>
+              <th scope="col">Payment Method</th>
+              <th scope="col">Status</th>
+              <th scope="col">Date</th>
+              <th scope="col" style="width: 20%;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for payment in payments %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ payment.order.customer.name|default:"N/A" }}</td>
+              <td>Rs: {{ payment.order.unit_price|floatformat:2|default:"0.00" }}</td>
+              <td>Rs: {{ payment.paid_amount|floatformat:2|default:"0.00" }}</td>
+              <td>Rs: {{ payment.remaining_amount|floatformat:2|default:"0.00" }}</td>
+              <td>{{ payment.payment_method|title|default:"N/A" }}</td>
+              <td>
+                <span class="badge {% if payment.status == 'pending' %}bg-warning{% elif payment.status == 'completed' %}bg-success{% elif payment.status == 'failed' %}bg-danger{% elif payment.status == 'refunded' %}bg-secondary{% else %}bg-info{% endif %}">
+                  {{ payment.status|title|default:"N/A" }}
+                </span>
+              </td>
+              <td>{{ payment.timestamp|date:"Y-m-d H:i"|default:"N/A" }}</td>
+              <td>
+                <a href="{% url 'payments:payment_details' payment.pk %}" class="btn btn-sm btn-info me-1">View</a>
+                <a href="{% url 'payments:edit_payment' payment.pk %}" class="btn btn-sm btn-warning me-1">Edit</a>
+                <a href="{% url 'payments:delete_payment' payment.pk %}" class="btn btn-sm btn-danger">Delete</a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="10" class="text-center text-muted py-4">No payments found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

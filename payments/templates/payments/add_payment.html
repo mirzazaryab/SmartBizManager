@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Payment - SmartBizManager{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="card shadow-sm">
+    <div class="card-header bg-dark text-white">
+      <h4 class="mb-0">
+        <i class="bi bi-wallet-fill me-2"></i>Add New Payment
+      </h4>
+    </div>
+    <div class="card-body">
+      {% if messages %}
+      <div class="mb-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% if form.errors %}
+      <div class="alert alert-danger" role="alert">
+        <ul>
+          {% for field, errors in form.errors.items %}
+          {% for error in errors %}
+          <li>{{ field }}: {{ error }}</li>
+          {% endfor %}
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+      {% if not form.order.queryset %}
+      <div class="alert alert-warning" role="alert">
+        No orders available. Please create an order first.
+      </div>
+      {% endif %}
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="{{ form.order.id_for_label }}" class="form-label">Order</label>
+          {{ form.order }}
+          {% if form.order.errors %}
+          <div class="invalid-feedback d-block">
+            {% for error in form.order.errors %}
+            <small class="text-danger">{{ error }}</small>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        <div class="mb-3">
+          <label for="total_payment" class="form-label">Total Order Amount</label>
+          <input type="text" class="form-control" id="total_payment" readonly>
+        </div>
+        <div class="mb-3">
+          <label for="advance_payment" class="form-label">Advance Payment</label>
+          <input type="text" class="form-control" id="advance_payment" readonly>
+        </div>
+        <div class="mb-3">
+          <label for="last_payment_date" class="form-label">Last Payment Date</label>
+          <input type="text" class="form-control" id="last_payment_date" readonly>
+        </div>
+        <div class="mb-3">
+          <label for="remaining_amount" class="form-label">Remaining Amount</label>
+          <input type="text" class="form-control" id="remaining_amount" readonly>
+        </div>
+        <div class="mb-3">
+          <label for="{{ form.amount.id_for_label }}" class="form-label">Payment Amount</label>
+          {{ form.amount }}
+          {% if form.amount.errors %}
+          <div class="invalid-feedback d-block">
+            {% for error in form.amount.errors %}
+            <small class="text-danger">{{ error }}</small>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        <div class="mb-3">
+          <label for="{{ form.payment_method.id_for_label }}" class="form-label">Payment Method</label>
+          {{ form.payment_method }}
+          {% if form.payment_method.errors %}
+          <div class="invalid-feedback d-block">
+            {% for error in form.payment_method.errors %}
+            <small class="text-danger">{{ error }}</small>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        <div class="mb-3">
+          <label for="{{ form.status.id_for_label }}" class="form-label">Status</label>
+          {{ form.status }}
+          {% if form.status.errors %}
+          <div class="invalid-feedback d-block">
+            {% for error in form.status.errors %}
+            <small class="text-danger">{{ error }}</small>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-check-circle-fill me-1"></i>Save
+        </button>
+        <a href="{% url 'payments:payment_list' %}" class="btn btn-secondary">
+          <i class="bi bi-x-circle-fill me-1"></i>Cancel
+        </a>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+  // Pass data from view to JavaScript
+  const orderTotals = {{ order_totals|safe }};
+  const advancePayments = {{ advance_payments|safe }};
+  const lastPaymentDates = {{ last_payment_dates|safe }};
+  const remainingAmounts = {{ remaining_amounts|safe }};
+
+  console.log('orderTotals:', orderTotals);
+  console.log('advancePayments:', advancePayments);
+  console.log('lastPaymentDates:', lastPaymentDates);
+  console.log('remainingAmounts:', remainingAmounts);
+
+  // Get form elements
+  const orderSelect = document.getElementById('{{ form.order.id_for_label }}');
+  const totalPaymentInput = document.getElementById('total_payment');
+  const advancePaymentInput = document.getElementById('advance_payment');
+  const lastPaymentDateInput = document.getElementById('last_payment_date');
+  const remainingAmountInput = document.getElementById('remaining_amount');
+  const amountInput = document.getElementById('{{ form.amount.id_for_label }}');
+
+  // Function to update payment fields based on selected order
+  function updatePaymentFields() {
+    if (!orderSelect) {
+      console.error('orderSelect not found');
+      return;
+    }
+    const selectedOrderId = orderSelect.value;
+    console.log('selectedOrderId:', selectedOrderId);
+    totalPaymentInput.value = orderTotals[selectedOrderId] || '0.00';
+    advancePaymentInput.value = advancePayments[selectedOrderId] || '0.00';
+    lastPaymentDateInput.value = lastPaymentDates[selectedOrderId] || 'No payments yet';
+    remainingAmountInput.value = remainingAmounts[selectedOrderId] || '0.00';
+    amountInput.max = parseFloat(remainingAmounts[selectedOrderId]) || 0;
+  }
+
+  // Update fields on page load
+  if (orderSelect && orderSelect.options.length > 0 && !orderSelect.value) {
+    orderSelect.value = orderSelect.options[0].value;
+  }
+  updatePaymentFields();
+
+  // Update fields when order changes
+  if (orderSelect) {
+    orderSelect.addEventListener('change', updatePaymentFields);
+  }
+</script>
+{% endblock %}
+{% endblock %}

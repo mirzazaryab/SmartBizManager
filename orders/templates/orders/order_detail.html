@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% block title %}Order #{{ order.id }} Details{% endblock %}
+
+{% block content %}
+<!-- Google Fonts - Using 'Inter' for consistency -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Bootstrap Icons for UI elements -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+    /* ============================================================
+                CLASSIC UI STYLES FOR ORDER DETAIL
+    ============================================================ */
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f8f9fa; /* A very light grey implants */
+    }
+
+    /* The main card container for the details */
+    .order-detail-card {
+        background-color: #ffffff;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Card header styling */
+    .order-detail-header {
+        padding: 1.5rem 2rem;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .order-detail-header h2 {
+        font-weight: 600;
+        color: #212529;
+        margin: 0;
+    }
+
+    .order-detail-header .order-id {
+        font-weight: 500;
+        color: #6c757d;
+    }
+
+    /* Card body styling */
+    .order-detail-body {
+        padding: 2rem;
+    }
+
+    .detail-section {
+        margin-bottom: 2rem;
+    }
+
+    .detail-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .detail-section h4 {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #343a40;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .detail-item {
+        display: flex;
+        margin-bottom: 0.75rem;
+    }
+
+    .detail-item strong {
+        color: #495057;
+        width: 120px; /* Aligns the values vertically */
+        flex-shrink: 0;
+    }
+
+    .detail-item span {
+        color: #212529;
+    }
+
+    /* Notes section styling */
+    .notes-content {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 6px;
+        color: #212529;
+        white-space: pre-wrap; /* Preserves line breaks */
+        min-height: 60px; /* Ensures visibility even if empty */
+    }
+
+    /* Reusing the status badge styles from the order list */
+    .status-badge {
+        padding: 0.3em 0.75em;
+        border-radius: 10rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #fff;
+    }
+    .status-pending { background-color: #f39c12; }
+    .status-shipped { background-color: #3498db; }
+    .status-delivered { background-color: #2ecc71; }
+    .status-cancelled { background-color: #e74c3c; }
+    .status-default { background-color: #95a5a6; }
+
+    /* Card footer with actions */
+    .order-detail-footer {
+        padding: 1.5rem 2rem;
+        background-color: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        border-radius: 0 0 8px 8px;
+        text-align: right;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="order-detail-card">
+        <!-- Card Header -->
+        <div class="order-detail-header">
+            <h2 class="mb-1">Order Details</h2>
+            <p class="order-id mb-0">Order ID: <strong>#{{ order.id }}</strong></p>
+        </div>
+
+        <!-- Card Body -->
+        <div class="order-detail-body">
+            <div class="row">
+                <!-- Customer Information Section -->
+                <div class="col-md-6">
+                    <div class="detail-section">
+                        <h4><i class="bi bi-person-circle me-2"></i>Customer Information</h4>
+                        <div class="detail-item"><strong>Customer:</strong> <span>{{ order.customer.name|default:"N/A" }}</span></div>
+                        <div class="detail-item"><strong>Email:</strong> <span>{{ order.customer.email|default:"N/A" }}</span></div>
+                        <div class="detail-item"><strong>Phone:</strong> <span>{{ order.customer.phone|default:"N/A" }}</span></div>
+                    </div>
+                </div>
+
+                <!-- Order Summary Section -->
+                <div class="col-md-6">
+                    <div class="detail-section">
+                        <h4><i class="bi bi-receipt me-2"></i>Order Summary</h4>
+                        <div class="detail-item"><strong>Date:</strong> <span>{{ order.created_at|date:"F d, Y"|default:"N/A" }}</span></div>
+                        <div class="detail-item">
+                            <strong>Status:</strong>
+                            <span>
+                                {% with lower_status=order.status|lower %}
+                                <span class="status-badge
+                                    {% if 'pending' in lower_status %}status-pending
+                                    {% elif 'shipped' in lower_status %}status-shipped
+                                    {% elif 'delivered' in lower_status %}status-delivered
+                                    {% elif 'cancelled' in lower_status %}status-cancelled
+                                    {% else %}status-default{% endif %}">
+                                    {{ order.get_status_display|default:"N/A" }}
+                                </span>
+                                {% endwith %}
+                            </span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Total:</strong>
+                            <span style="font-weight: 700; font-size: 1.1rem; color: #2c3e50;">Rs {{ order.total_price|floatformat:2|default:"0.00" }}</span>
+                        </div>
+                        <div class="detail-section">
+                            <h4><i class="bi bi-chat-left-text me-2"></i>Notes</h4>
+                            <div class="notes-content">{{ order.notes|default:"No notes available" }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Footer -->
+        <div class="order-detail-footer">
+            <a href="{% url 'orders:order_list' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to All Orders
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

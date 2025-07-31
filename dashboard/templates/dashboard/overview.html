@@ -1,0 +1,358 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard Overview{% endblock %}
+
+{% block content %}
+<!-- Google Fonts - Using 'Inter' for consistency -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Bootstrap Icons for UI elements -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    /* ============================================================
+                CLASSIC UI STYLES FOR DASHBOARD
+    ============================================================ */
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f8f9fa; /* Fallback background */
+    }
+
+    /* Main container with gradient background */
+    .dashboard-container {
+        padding: 2rem;
+        background: linear-gradient(135deg, #e8f0fe 0%, #f8f9fa 100%); /* Soft blue to light grey gradient */
+        min-height: 100vh; /* Ensure full height */
+    }
+
+    /* Header styling */
+    .dashboard-header {
+        padding: 1.5rem 2rem;
+        background-color: #ffffff;
+        border-bottom: 1px solid #dee2e6;
+        margin-bottom: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .dashboard-header h2 {
+        font-weight: 600;
+        color: #212529;
+        margin: 0;
+    }
+
+    .dashboard-header i {
+        color: #3498db; /* Blue accent for header icon */
+    }
+
+    /* Card styling for metrics */
+    .metric-card {
+        background-color: #ffffff;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .metric-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+    }
+
+    .metric-card.customers::before { background-color: #3498db; } /* Blue for Total Customers */
+    .metric-card.orders::before { background-color: #2ecc71; } /* Green for Total Orders */
+    .metric-card.pending::before { background-color: #f39c12; } /* Orange for Pending Orders */
+    .metric-card.delivered::before { background-color: #9b59b6; } /* Purple for Delivered Orders */
+
+    .metric-card .card-body {
+        padding: 1.5rem;
+    }
+
+    .metric-card .card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 0.5rem;
+    }
+
+    .metric-card .card-text {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+
+    .metric-card .text-muted {
+        font-size: 0.85rem;
+    }
+
+    /* Chart and table card styling */
+    .dashboard-card {
+        background-color: #ffffff;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .dashboard-card .card-header {
+        padding: 1rem 1.5rem;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        font-weight: 600;
+        color: #343a40;
+    }
+
+    .dashboard-card .card-header i {
+        color: #3498db; /* Blue accent for chart/table icons */
+    }
+
+    .dashboard-card .card-body {
+        padding: 1.5rem;
+    }
+
+    /* Status badge styles */
+    .status-badge {
+        padding: 0.3em 0.75em;
+        border-radius: 10rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .status-pending { background-color: #f39c12; }
+    .status-completed { background-color: #2ecc71; }
+    .status-failed { background-color: #e74c3c; }
+    .status-default { background-color: #95a5a6; }
+
+    /* Table styling */
+    .table th, .table td {
+        vertical-align: middle;
+    }
+
+    .table th {
+        font-weight: 600;
+        color: #343a40;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f1f3f5; /* Subtle hover effect */
+    }
+
+    .notes-content {
+        max-width: 200px;
+        white-space: pre-wrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: #495057;
+    }
+
+    /* Empty chart message */
+    .empty-chart-message {
+        text-align: center;
+        color: #6c757d;
+        font-size: 1rem;
+        padding: 1rem;
+    }
+</style>
+
+<div class="dashboard-container">
+    <!-- Header -->
+    <div class="dashboard-header">
+        <h2><i class="bi bi-speedometer2 me-2"></i>Dashboard Overview</h2>
+    </div>
+
+    <!-- Metric Cards -->
+    <div class="row mb-4">
+        {% for card in cards %}
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="metric-card {{ card.css_class }}">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi {{ card.icon }} me-2"></i>{{ card.title }}</h5>
+                    <p class="card-text">{{ card.count }}</p>
+                    <small class="text-muted">Last updated: {{ card.last_updated }}</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Charts -->
+    <div class="row mb-4">
+        <!-- Line Chart: Weekly Sales -->
+        <div class="col-md-6 mb-4">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <i class="bi bi-graph-up me-2"></i>Weekly Sales
+                </div>
+                <div class="card-body">
+                    {% if chart_data %}
+                    <canvas id="salesChart"></canvas>
+                    {% else %}
+                    <div class="empty-chart-message">No weekly sales data available for the last 12 weeks.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <!-- Bar Chart: Order Management -->
+        <div class="col-md-6 mb-4">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <i class="bi bi-bar-chart me-2"></i>Order Management
+                </div>
+                <div class="card-body">
+                    <canvas id="orderChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transactions Table -->
+    <div class="dashboard-card mb-4">
+        <div class="card-header">
+            <i class="bi bi-table me-2"></i>Recent Transactions
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in transactions %}
+                        <tr>
+                            <td>{{ transaction.id }}</td>
+                            <td>{{ transaction.created_at|date:"F d, Y" }}</td>
+                            <td>{{ transaction.order.customer.name|default:"N/A" }}</td>
+                            <td>Rs {{ transaction.amount|floatformat:2 }}</td>
+                            <td>
+                                <span class="status-badge
+                                    {% if transaction.status == 'completed' %}status-completed
+                                    {% elif transaction.status == 'pending' %}status-pending
+                                    {% elif transaction.status == 'failed' %}status-failed
+                                    {% else %}status-default{% endif %}">
+                                    {{ transaction.get_status_display|default:"N/A" }}
+                                </span>
+                            </td>
+                            <td class="notes-content">{{ transaction.notes|default:"No notes" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">No recent transactions available.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Line Chart: Weekly Sales
+    {% if chart_data %}
+    const salesChartCtx = document.getElementById('salesChart').getContext('2d');
+    const gradient = salesChartCtx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(46, 204, 113, 0.8)'); /* Green */
+    gradient.addColorStop(1, 'rgba(26, 188, 156, 0.8)'); /* Teal */
+
+    const salesChart = new Chart(salesChartCtx, {
+        type: 'line',
+        data: {
+            labels: {{ chart_labels|safe }},
+            datasets: [{
+                label: 'Weekly Sales (Rs)',
+                data: {{ chart_data|safe }},
+                backgroundColor: gradient,
+                borderColor: '#2ecc71',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Sales Amount (Rs)',
+                        color: '#343a40'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Week',
+                        color: '#343a40'
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+
+    // Bar Chart: Order Management
+    const orderChart = new Chart(document.getElementById('orderChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: {{ order_labels|safe }},
+            datasets: [{
+                label: 'Order Counts',
+                data: {{ order_data|safe }},
+                backgroundColor: [
+                    '#2ecc71', /* Green for Total Orders */
+                    '#f39c12'  /* Orange for Pending Orders */
+                ],
+                borderColor: '#2c3e50',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Orders',
+                        color: '#343a40'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Order Type',
+                        color: '#343a40'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
