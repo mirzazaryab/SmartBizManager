@@ -5,6 +5,8 @@ from .forms import PaymentForm
 from .models import Payment
 from decimal import Decimal
 from django.db.models import Sum
+from datetime import datetime
+
 @login_required(login_url='login')
 def payment_add(request):
     form = PaymentForm(request.POST or None)

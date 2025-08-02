@@ -15,18 +15,37 @@
     <div class="container d-flex justify-content-center align-items-center min-vh-100">
         <div class="card shadow-lg border-0" style="max-width: 500px; width: 100%; border-radius: 20px; overflow: hidden; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);">
             <div class="card-body p-5">
-                <div class="text-center mb-4">
-                    <img src="{% static 'images/logo.png' %}" alt="SmartBizManager Logo" style="width: 60px; height: 60px; margin-bottom: 1rem;">
-                    <h2 class="fw-bold text-dark">User Profile</h2>
-                    <p class="text-muted">Manage your account details</p>
-                </div>
-                <div class="mb-4">
-                    <h5 class="fw-semibold">Username: {{ user.username }}</h5>
-                    <p class="text-muted">Email: {{ user.email }}</p>
-                </div>
-                <a href="{% url 'logout' %}" class="btn btn-primary btn-lg w-100" style="transition: background-color 0.3s, transform 0.2s;">
-                    <i class="bi bi-box-arrow-right me-2"></i>Logout
-                </a>
+                <form method="POST" action="{% url 'update_profile' %}">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <h5 class="fw-semibold">Username: {{ user.username }}</h5>
+                        <p class="text-muted">Email: {{ user.email }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="full_name" class="form-label">Full Name</label>
+                        <input type="text" name="full_name" id="full_name" class="form-control" value="{{ profile.full_name }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="text" name="phone" id="phone" class="form-control" value="{{ profile.phone }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <textarea name="address" id="address" class="form-control" rows="2">{{ profile.address }}</textarea>
+                    </div>
+
+                    <div class="mb-4 d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-check-circle me-2"></i>Save Changes
+                        </button>
+                        <a href="{% url 'logout' %}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-box-arrow-right me-2"></i>Logout
+                        </a>
+                    </div>
+                </form>
             </div>
             <div class="card-footer text-center bg-dark text-white py-3">
                 <small>&copy; 2025 SmartBizManager. All rights reserved.</small>

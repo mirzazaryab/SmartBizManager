@@ -44,7 +44,7 @@
                   {{ payment.status|title|default:"N/A" }}
                 </span>
               </td>
-              <td>{{ payment.timestamp|date:"Y-m-d H:i"|default:"N/A" }}</td>
+              <td>{{ payment.created_at|date:"Y-m-d / H:i"|default:"N/A" }}</td>
               <td>
                 <a href="{% url 'payments:payment_details' payment.pk %}" class="btn btn-sm btn-info me-1">View</a>
                 <a href="{% url 'payments:edit_payment' payment.pk %}" class="btn btn-sm btn-warning me-1">Edit</a>

@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
+from .models import Profile
 from django.contrib.auth.decorators import login_required
 
 def login_view(request):
@@ -44,6 +45,19 @@ def register(request):
             messages.success(request, "Registration successful. Please log in.")
             return redirect('login')  # Redirect to login page
     return render(request, 'accounts/register.html')
+
+@login_required
+def update_profile(request):
+    profile, created = Profile.objects.get_or_create(user=request.user)
+
+    if request.method == 'POST':
+        profile.full_name = request.POST.get('full_name')
+        profile.phone = request.POST.get('phone')
+        profile.address = request.POST.get('address')
+        profile.save()
+        return redirect('profile')  # update this name to match your profile view
+
+    return render(request, 'accounts/profile.html', {'profile': profile})
 
 def profile_view(request):
     return render(request, 'accounts/profile.html', {'user': request.user})
