@@ -1,7 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
-from django.db.models import Sum, Count, F, ExpressionWrapper, DecimalField
+from django.db.models import Sum, F, ExpressionWrapper, DecimalField
 from django.db.models.functions import TruncWeek
 from orders.models import Order
 from customers.models import Customer
@@ -9,6 +9,8 @@ from payments.models import Payment
 from datetime import datetime, timedelta
 import logging
 from django.utils import timezone
+from .models import Expense
+from django.contrib import messages
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -100,6 +102,18 @@ def dashboard_overview(request):
 
     # Transactions: Recent payments
     transactions = Payment.objects.select_related('order__customer').order_by('-created_at')[:10]
+    today = timezone.localdate()
+    # Total Expenses Today (from Expense model)
+    total_expenses_today = Expense.objects.filter(
+        created_at__date=today
+    ).aggregate(total=Sum('amount'))['total'] or 0
+
+    # Total Revenue Today (e.g. status='completed')
+    total_revenue_today = Payment.objects.filter(
+        created_at__date=today,
+        status__iexact='received'
+    ).aggregate(total=Sum('amount'))['total'] or 0
+
 
     return render(request, "dashboard/overview.html", {
         "cards": cards,
@@ -108,7 +122,11 @@ def dashboard_overview(request):
         "order_labels": order_labels,
         "order_data": order_data,
         "transactions": transactions,
+        "total_revenue_today": total_revenue_today,
+        "total_expenses_today": total_expenses_today,
+        "now": timezone.now(),
     })
+
 
 def sales_report(request):
     sales = Order.objects.all().order_by('-created_at')
@@ -135,3 +153,57 @@ def charts(request):
         'labels': labels,
         'values': values,
     })
+
+def add_expense(request):
+    if request.method == "POST":
+        category = request.POST.get('category')
+        amount = request.POST.get('amount')
+        description = request.POST.get('description')
+
+        try:
+            amount = float(amount)
+            Expense.objects.create(
+                category=category,
+                amount=amount,
+                description=description
+            )
+            messages.success(request, "Expense added successfully!")
+            return redirect('dashboard:overview')  # Redirect after successful POST
+        except ValueError:
+            messages.error(request, "Invalid amount. Please enter a valid number.")
+
+    return render(request, "dashboard/add_expense.html")
+
+# View All Expenses
+def view_expenses(request):
+    expenses = Expense.objects.order_by('-created_at')  # latest first
+    return render(request, 'dashboard/view_expenses.html', {'expenses': expenses})
+
+# Edit Expense
+def edit_expense(request, expense_id):
+    expense = get_object_or_404(Expense, id=expense_id)
+
+    if request.method == 'POST':
+        category = request.POST.get('category')
+        amount = request.POST.get('amount')
+        description = request.POST.get('description')
+
+        try:
+            expense.category = category
+            expense.amount = float(amount)
+            expense.description = description
+            expense.save()
+            messages.success(request, "Expense updated successfully!")
+            return redirect('view_expenses')
+        except ValueError:
+            messages.error(request, "Invalid amount entered.")
+
+    return render(request, 'dashboard/edit_expense.html', {'expense': expense})
+
+def delete_expense(request, expense_id):
+    expense = get_object_or_404(Expense, id=expense_id)
+    if request.method == 'POST':
+        expense.delete()
+        messages.success(request, 'Expense deleted successfully.')
+        return redirect('dashboard:view_expenses')
+    return render(request, 'dashboard/delete_expense.html', {'expense': expense})

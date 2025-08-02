@@ -19,17 +19,15 @@
     ============================================================ */
     body {
         font-family: 'Inter', sans-serif;
-        background-color: #f8f9fa; /* Fallback background */
+        background-color: #f8f9fa;
     }
 
-    /* Main container with gradient background */
     .dashboard-container {
         padding: 2rem;
-        background: linear-gradient(135deg, #e8f0fe 0%, #f8f9fa 100%); /* Soft blue to light grey gradient */
-        min-height: 100vh; /* Ensure full height */
+        background: linear-gradient(135deg, #e8f0fe 0%, #f8f9fa 100%);
+        min-height: 100vh;
     }
 
-    /* Header styling */
     .dashboard-header {
         padding: 1.5rem 2rem;
         background-color: #ffffff;
@@ -46,10 +44,10 @@
     }
 
     .dashboard-header i {
-        color: #3498db; /* Blue accent for header icon */
+        color: #3498db;
     }
 
-    /* Card styling for metrics */
+    /* Ensure equal height for metric cards */
     .metric-card {
         background-color: #ffffff;
         border-radius: 8px;
@@ -58,6 +56,9 @@
         transition: transform 0.2s;
         position: relative;
         overflow: hidden;
+        height: 100%; /* Ensure cards stretch to fill container */
+        display: flex;
+        flex-direction: column;
     }
 
     .metric-card:hover {
@@ -73,13 +74,19 @@
         width: 4px;
     }
 
-    .metric-card.customers::before { background-color: #3498db; } /* Blue for Total Customers */
-    .metric-card.orders::before { background-color: #2ecc71; } /* Green for Total Orders */
-    .metric-card.pending::before { background-color: #f39c12; } /* Orange for Pending Orders */
-    .metric-card.delivered::before { background-color: #9b59b6; } /* Purple for Delivered Orders */
+    .metric-card.customers::before { background-color: #3498db; }
+    .metric-card.orders::before { background-color: #2ecc71; }
+    .metric-card.pending::before { background-color: #f39c12; }
+    .metric-card.delivered::before { background-color: #9b59b6; }
+    .metric-card.revenue::before { background-color: #27ae60; }
+    .metric-card.expenses::before { background-color: #e74c3c; }
 
     .metric-card .card-body {
         padding: 1.5rem;
+        flex: 1; /* Ensure card-body takes available space */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between; /* Align content evenly */
     }
 
     .metric-card .card-title {
@@ -93,18 +100,22 @@
         font-size: 2rem;
         font-weight: 700;
         color: #2c3e50;
+        margin-bottom: 0.5rem;
     }
 
     .metric-card .text-muted {
         font-size: 0.85rem;
     }
 
-    /* Chart and table card styling */
+    /* Ensure equal height for dashboard cards */
     .dashboard-card {
         background-color: #ffffff;
         border-radius: 8px;
         border: 1px solid #dee2e6;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        height: 100%; /* Ensure cards stretch to fill container */
+        display: flex;
+        flex-direction: column;
     }
 
     .dashboard-card .card-header {
@@ -116,14 +127,14 @@
     }
 
     .dashboard-card .card-header i {
-        color: #3498db; /* Blue accent for chart/table icons */
+        color: #3498db;
     }
 
     .dashboard-card .card-body {
         padding: 1.5rem;
+        flex: 1; /* Ensure card-body takes available space */
     }
 
-    /* Status badge styles */
     .status-badge {
         padding: 0.3em 0.75em;
         border-radius: 10rem;
@@ -137,7 +148,6 @@
     .status-failed { background-color: #e74c3c; }
     .status-default { background-color: #95a5a6; }
 
-    /* Table styling */
     .table th, .table td {
         vertical-align: middle;
     }
@@ -148,7 +158,7 @@
     }
 
     .table tbody tr:hover {
-        background-color: #f1f3f5; /* Subtle hover effect */
+        background-color: #f1f3f5;
     }
 
     .notes-content {
@@ -159,12 +169,21 @@
         color: #495057;
     }
 
-    /* Empty chart message */
     .empty-chart-message {
         text-align: center;
         color: #6c757d;
         font-size: 1rem;
         padding: 1rem;
+    }
+
+    /* Ensure equal height for rows */
+    .row.equal-height {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .row.equal-height > [class*='col-'] {
+        display: flex;
+        flex-direction: column;
     }
 </style>
 
@@ -175,7 +194,7 @@
     </div>
 
     <!-- Metric Cards -->
-    <div class="row mb-4">
+    <div class="row mb-4 equal-height">
         {% for card in cards %}
         <div class="col-md-3 col-sm-6 mb-4">
             <div class="metric-card {{ card.css_class }}">
@@ -189,10 +208,48 @@
         {% endfor %}
     </div>
 
+    <!-- Revenue and Expenses Row -->
+    <div class="row mb-4 equal-height">
+        <!-- Today's Revenue -->
+        <div class="col-md-6 col-sm-12 mb-4">
+            <div class="metric-card revenue">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-cash-coin me-2"></i>Total Revenue Today</h5>
+                    <p class="card-text">Rs {{ total_revenue_today|floatformat:2 }}</p>
+                    <small class="text-muted">Date: {{ now|date:"F d, Y" }}</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Expenses -->
+        <div class="col-md-6 col-sm-12 mb-4">
+            <div class="metric-card expenses">
+                <div class="card-body d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5 class="card-title"><i class="bi bi-credit-card-2-front-fill me-2"></i>Total Expenses Today</h5>
+                        <p class="card-text">Rs. {{ total_expenses_today }}</p>
+                        <small class="text-muted">Date: {{ now|date:"F d, Y" }}</small>
+                    </div>
+                    <div class="d-flex flex-column align-items-end gap-2">
+                        <a href="{% url 'dashboard:add_expense' %}" title="Add Expense">
+                            <i class="bi bi-plus-circle-fill text-success fs-5"></i>
+                        </a>
+                        <a href="{% url 'dashboard:view_expenses' %}" title="View Expenses">
+                            <i class="bi bi-eye-fill text-primary fs-5"></i>
+                        </a>
+                        <a href="{% url 'dashboard:view_expenses' %}" title="Manage Expenses">
+                            <i class="bi bi-tools text-warning fs-5"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Charts -->
-    <div class="row mb-4">
+    <div class="row mb-4 equal-height">
         <!-- Line Chart: Weekly Sales -->
-        <div class="col-md-6 mb-4">
+        <div class="col-md-6 col-sm-12 mb-4">
             <div class="dashboard-card">
                 <div class="card-header">
                     <i class="bi bi-graph-up me-2"></i>Weekly Sales
@@ -206,8 +263,9 @@
                 </div>
             </div>
         </div>
+
         <!-- Bar Chart: Order Management -->
-        <div class="col-md-6 mb-4">
+        <div class="col-md-6 col-sm-12 mb-4">
             <div class="dashboard-card">
                 <div class="card-header">
                     <i class="bi bi-bar-chart me-2"></i>Order Management
@@ -272,8 +330,8 @@
     {% if chart_data %}
     const salesChartCtx = document.getElementById('salesChart').getContext('2d');
     const gradient = salesChartCtx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, 'rgba(46, 204, 113, 0.8)'); /* Green */
-    gradient.addColorStop(1, 'rgba(26, 188, 156, 0.8)'); /* Teal */
+    gradient.addColorStop(0, 'rgba(46, 204, 113, 0.8)');
+    gradient.addColorStop(1, 'rgba(26, 188, 156, 0.8)');
 
     const salesChart = new Chart(salesChartCtx, {
         type: 'line',
@@ -321,8 +379,8 @@
                 label: 'Order Counts',
                 data: {{ order_data|safe }},
                 backgroundColor: [
-                    '#2ecc71', /* Green for Total Orders */
-                    '#f39c12'  /* Orange for Pending Orders */
+                    '#2ecc71',
+                    '#f39c12'
                 ],
                 borderColor: '#2c3e50',
                 borderWidth: 1

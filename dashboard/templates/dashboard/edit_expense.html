@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Edit Expense</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label>Category:</label>
+      <select name="category" class="form-control">
+        {% for key, value in expense.CATEGORY_CHOICES %}
+          <option value="{{ key }}" {% if expense.category == key %}selected{% endif %}>{{ value }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label>Amount:</label>
+      <input type="text" name="amount" value="{{ expense.amount }}" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label>Description:</label>
+      <textarea name="description" class="form-control">{{ expense.description }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Update</button>
+    <a href="{% url 'view_expenses' %}" class="btn btn-secondary">Back</a>
+  </form>
+</div>
+{% endblock %}

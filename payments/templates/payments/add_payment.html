@@ -33,11 +33,6 @@
         </ul>
       </div>
       {% endif %}
-      {% if not form.order.queryset %}
-      <div class="alert alert-warning" role="alert">
-        No orders available. Please create an order first.
-      </div>
-      {% endif %}
       <form method="post">
         {% csrf_token %}
         <div class="mb-3">

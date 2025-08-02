@@ -18,8 +18,7 @@ def order_create(request):
     if request.method == 'POST':
         form = OrderForm(request.POST)
         if form.is_valid():
-            order = form.save()  # Save the form and get the order instance
-            messages.success(request, f'Order for "{order.product_name}" was successfully added!')
+            order = form.save()
             return redirect('payments:payment_add')
         else:
             messages.error(request, 'Error adding order. Please check the form.')

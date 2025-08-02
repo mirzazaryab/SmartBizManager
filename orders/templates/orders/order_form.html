@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-4 py-4">
     <h2>{% if form.instance.pk %}Edit{% else %}Create{% endif %} Order</h2>
     <form method="post">
         {% csrf_token %}

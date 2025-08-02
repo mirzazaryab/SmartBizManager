@@ -5,8 +5,6 @@ from .forms import PaymentForm
 from .models import Payment
 from decimal import Decimal
 from django.db.models import Sum
-from datetime import datetime
-
 @login_required(login_url='login')
 def payment_add(request):
     form = PaymentForm(request.POST or None)
@@ -16,8 +14,7 @@ def payment_add(request):
     remaining_amounts = {}
 
     try:
-        if not form.fields['order'].queryset.exists():
-            messages.warning(request, 'No orders available. Please create an order first.')
+
         for order in form.fields['order'].queryset:
             order_id = str(order.id)
             order_totals[order_id] = str(order.total_price)
